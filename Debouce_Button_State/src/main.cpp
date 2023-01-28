@@ -1,9 +1,27 @@
-#include <Arduino.h>
+#include<Arduino.h>
+#define BUTTON_PIN 2
 
+unsigned long currentMillis, previousMillis;
+int currentButtonState, lastButtonState, lastDebouncedButtonState;
 void setup() {
-  // put your setup code here, to run once:
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  Serial.begin(9600);
+  currentMillis = millis();
+  //digitalWrite(3, HIGH);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  currentMillis = millis();
+  currentButtonState = digitalRead(BUTTON_PIN);
+  if (currentButtonState != lastButtonState) {
+    previousMillis = millis();
+    lastDebouncedButtonState = currentButtonState;
+  }
+  if (currentButtonState == LOW && lastButtonState == HIGH) {
+    Serial.println("Button Pressed");
+  }
+  else if(currentButtonState == HIGH && lastButtonState == LOW){
+    Serial.println("Button Released"); 
+  }
+  lastButtonState = currentButtonState;
 }

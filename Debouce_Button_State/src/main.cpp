@@ -5,23 +5,27 @@ unsigned long currentMillis, previousMillis;
 int currentButtonState, lastButtonState, lastDebouncedButtonState;
 void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(3, OUTPUT);
   Serial.begin(9600);
   currentMillis = millis();
-  //digitalWrite(3, HIGH);
+  previousMillis = currentMillis;
 }
 
 void loop() {
   currentMillis = millis();
   currentButtonState = digitalRead(BUTTON_PIN);
-  if (currentButtonState != lastButtonState) {
+  if (currentButtonState != lastDebouncedButtonState) {
     previousMillis = millis();
     lastDebouncedButtonState = currentButtonState;
   }
-  if (currentButtonState == LOW && lastButtonState == HIGH) {
-    Serial.println("Button Pressed");
+  if((currentMillis - previousMillis) > 50 ){
+    if (lastButtonState == HIGH && currentButtonState == LOW) {
+      Serial.println("Button Pressed");
+    }
+    else if(lastButtonState == LOW && currentButtonState == HIGH){
+      Serial.println("Button Released"); 
+    }
+    lastButtonState = currentButtonState;
   }
-  else if(currentButtonState == HIGH && lastButtonState == LOW){
-    Serial.println("Button Released"); 
-  }
-  lastButtonState = currentButtonState;
+  
 }

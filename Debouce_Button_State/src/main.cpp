@@ -3,56 +3,62 @@
 #define LED1 13
 #define LED2 14
 
-unsigned long currentMillis, previousMillis;
-int currentButtonState, lastButtonState, lastDebouncedButtonState;
+unsigned long curr, prev;
 int state = 0;
+
+int button_state(void){
+  int x = 0;
+  curr = millis()/100;
+  if(curr != prev){
+    prev = curr;
+    int btn = digitalRead(BUTTON_PIN);
+    if(state == 0){
+      if(btn == LOW){
+        state = 1;
+        x = 1;
+      }
+    }
+    else if(state == 1){
+      if(btn == LOW){
+        state = 2;
+        Serial.println("Button pressed");
+      }
+      else{
+        state = 0;
+      }
+    }
+    else if(state == 2){
+      if(btn == HIGH){
+        state = 3;
+      }
+      else{
+        x = 2;
+      }
+    }
+    else if(state == 3){
+      if(btn == HIGH){
+        state = 0;
+        Serial.println("Button released");
+      }
+      else{
+        state = 2;
+      }
+    }
+  }
+  return x;
+}
 void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   Serial.begin(115200);
-  currentMillis = millis();
-  previousMillis = currentMillis;
+  
 }
 
 void loop() {
-  currentMillis = millis();
-  currentButtonState = digitalRead(BUTTON_PIN);
-  if (currentButtonState != lastDebouncedButtonState) {
-    previousMillis = millis();
-    lastDebouncedButtonState = currentButtonState;
-  }
-  if((currentMillis - previousMillis) > 50 ){
-    if (lastButtonState == HIGH && currentButtonState == LOW) {
-      state++;
-      if (state > 3){
-        state = 0;
-      }
-      Serial.println("Button Pressed");
-      Serial.println(state);
-    }
-    else if(lastButtonState == LOW && currentButtonState == HIGH){
-      Serial.println("Button Released");
-    }
-    lastButtonState = currentButtonState;
-  }
-
-  switch (state) {
-    case 0:
-      digitalWrite(LED1, LOW);
-      digitalWrite(LED2, LOW);
-      break;
-    case 1:
-      digitalWrite(LED1, HIGH);
-      digitalWrite(LED2, LOW);
-      break;
-    case 2:
-      digitalWrite(LED1, LOW);
-      digitalWrite(LED2, HIGH);
-      break;
-    case 3:
-      digitalWrite(LED1, HIGH);
-      digitalWrite(LED2, HIGH);
-      break;
+  int bn;
+  bn = button_state();
+  if(bn == 1){
+    Serial.println("Button pressed");
   }
 }
